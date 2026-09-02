@@ -1,8 +1,9 @@
 import { useAuth } from "@clerk/expo";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 export default function Index() {
+  const router = useRouter();
   const { isLoaded, isSignedIn, signOut } = useAuth();
 
   if (!isLoaded) {
@@ -22,6 +23,12 @@ export default function Index() {
       <Text className="h1 text-center text-lingua-purple">
         KobbiRus
       </Text>
+      <Pressable
+        onPress={() => router.push("/language-selection")}
+        className="bg-lingua-purple rounded-full px-6 py-3"
+      >
+        <Text className="text-white text-sm font-poppins-medium">Choose a language</Text>
+      </Pressable>
       <Pressable
         onPress={() => signOut()}
         className="bg-lingua-purple rounded-full px-6 py-3"

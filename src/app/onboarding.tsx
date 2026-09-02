@@ -1,10 +1,13 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import { images } from "@/constants/images";
 import { Image } from "@/tw/image";
 
 export default function Onboarding() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View className="flex-1 px-6">
@@ -53,7 +56,7 @@ export default function Onboarding() {
         </View>
 
         <Pressable
-          onPress={() => {}}
+          onPress={() => router.push("/sign-up")}
           className="bg-lingua-purple rounded-full h-16 items-center justify-center mb-6 active:opacity-90"
           style={styles.buttonShadow}
         >

@@ -1,3 +1,5 @@
+import { useSignUp } from "@clerk/expo";
+import { useSSO } from "@clerk/expo/experimental";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
@@ -9,13 +11,15 @@ import { VerificationModal } from "@/components/auth/VerificationModal";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SocialButton } from "@/components/SocialButton";
 import { TextField } from "@/components/TextField";
-import { verifyEmailCode } from "@/lib/verification";
 import { isValidEmail } from "@/lib/validation";
 
-const MIN_PASSWORD_LENGTH = 8;
+const MIN_PASSWORD_LENGTH = 15;
 
 export default function SignUp() {
   const router = useRouter();
+  const { signUp, errors, fetchStatus } = useSignUp();
+  const { startSSOFlow } = useSSO();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -32,7 +36,7 @@ export default function SignUp() {
     setPasswordError(null);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     const emailValid = isValidEmail(email);
     const passwordValid = password.trim().length >= MIN_PASSWORD_LENGTH;
 
@@ -43,8 +47,43 @@ export default function SignUp() {
 
     if (!emailValid || !passwordValid) return;
 
+    const { error } = await signUp.password({ emailAddress: email, password });
+    if (error) return;
+
+    const { error: sendError } = await signUp.verifications.sendEmailCode();
+    if (sendError) return;
+
     setModalVisible(true);
   };
+
+  const handleVerifyEmailCode = async (_email: string, code: string) => {
+    const { error } = await signUp.verifications.verifyEmailCode({ code });
+    if (error) throw new Error(error.longMessage ?? error.message);
+
+    if (signUp.status === "complete") {
+      const { error: finalizeError } = await signUp.finalize();
+      if (finalizeError) throw new Error(finalizeError.longMessage ?? finalizeError.message);
+      return;
+    }
+
+    throw new Error("Additional verification is required. Please try again.");
+  };
+
+  const handleSSOSignUp = async (strategy: "oauth_google" | "oauth_facebook" | "oauth_apple") => {
+    try {
+      const { createdSessionId } = await startSSOFlow({ strategy });
+      if (createdSessionId) {
+        router.replace("/");
+      }
+    } catch (err) {
+      console.error(`${strategy} sign-up error:`, err);
+    }
+  };
+
+  const emailErrorMessage =
+    emailError ?? errors.fields.emailAddress?.longMessage ?? errors.fields.emailAddress?.message ?? null;
+  const passwordErrorMessage =
+    passwordError ?? errors.fields.password?.longMessage ?? errors.fields.password?.message ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -78,8 +117,8 @@ export default function SignUp() {
               autoCapitalize="none"
               autoComplete="email"
             />
-            {emailError && (
-              <Text className="text-xs font-poppins text-error mt-1 ml-1">{emailError}</Text>
+            {emailErrorMessage && (
+              <Text className="text-xs font-poppins text-error mt-1 ml-1">{emailErrorMessage}</Text>
             )}
           </View>
           <View>
@@ -90,15 +129,22 @@ export default function SignUp() {
               isPassword
               autoComplete="password"
             />
-            {passwordError && (
-              <Text className="text-xs font-poppins text-error mt-1 ml-1">{passwordError}</Text>
+            {passwordErrorMessage && (
+              <Text className="text-xs font-poppins text-error mt-1 ml-1">{passwordErrorMessage}</Text>
             )}
           </View>
         </View>
 
         <View className="mt-6">
-          <PrimaryButton label="Sign Up" onPress={handleSignUp} />
+          <PrimaryButton
+            label="Sign Up"
+            onPress={handleSignUp}
+            disabled={fetchStatus === "fetching"}
+          />
         </View>
+
+        {/* Required mount point for Clerk's bot protection on sign-up */}
+        <View nativeID="clerk-captcha" />
 
         <View className="flex-row items-center mt-6">
           <View className="flex-1 h-px bg-border" />
@@ -112,17 +158,17 @@ export default function SignUp() {
           <SocialButton
             label="Continue with Google"
             icon={<FontAwesome name="google" size={20} color="#4285F4" />}
-            disabled
+            onPress={() => handleSSOSignUp("oauth_google")}
           />
           <SocialButton
             label="Continue with Facebook"
             icon={<FontAwesome name="facebook" size={22} color="#1877F2" />}
-            disabled
+            onPress={() => handleSSOSignUp("oauth_facebook")}
           />
           <SocialButton
             label="Continue with Apple"
             icon={<FontAwesome name="apple" size={22} color="#000000" />}
-            disabled
+            onPress={() => handleSSOSignUp("oauth_apple")}
           />
         </View>
 
@@ -140,7 +186,7 @@ export default function SignUp() {
         visible={modalVisible}
         email={email}
         onClose={() => setModalVisible(false)}
-        verificationService={verifyEmailCode}
+        verificationService={handleVerifyEmailCode}
       />
     </SafeAreaView>
   );

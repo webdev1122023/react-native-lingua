@@ -1,3 +1,5 @@
+import { useSignIn } from "@clerk/expo";
+import { useSSO } from "@clerk/expo/experimental";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
@@ -9,11 +11,13 @@ import { VerificationModal } from "@/components/auth/VerificationModal";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SocialButton } from "@/components/SocialButton";
 import { TextField } from "@/components/TextField";
-import { verifyEmailCode } from "@/lib/verification";
 import { isValidEmail } from "@/lib/validation";
 
 export default function SignIn() {
   const router = useRouter();
+  const { signIn, errors, fetchStatus } = useSignIn();
+  const { startSSOFlow } = useSSO();
+
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,14 +27,44 @@ export default function SignIn() {
     setEmailError(null);
   };
 
-  const handleLogIn = () => {
+  const handleLogIn = async () => {
     if (!isValidEmail(email)) {
       setEmailError("Enter a valid email address");
       return;
     }
 
+    const { error } = await signIn.emailCode.sendCode({ emailAddress: email });
+    if (error) return;
+
     setModalVisible(true);
   };
+
+  const handleVerifyEmailCode = async (_email: string, code: string) => {
+    const { error } = await signIn.emailCode.verifyCode({ code });
+    if (error) throw new Error(error.longMessage ?? error.message);
+
+    if (signIn.status === "complete") {
+      const { error: finalizeError } = await signIn.finalize();
+      if (finalizeError) throw new Error(finalizeError.longMessage ?? finalizeError.message);
+      return;
+    }
+
+    throw new Error("Additional verification is required. Please try again.");
+  };
+
+  const handleSSOSignIn = async (strategy: "oauth_google" | "oauth_facebook" | "oauth_apple") => {
+    try {
+      const { createdSessionId } = await startSSOFlow({ strategy });
+      if (createdSessionId) {
+        router.replace("/");
+      }
+    } catch (err) {
+      console.error(`${strategy} sign-in error:`, err);
+    }
+  };
+
+  const emailErrorMessage =
+    emailError ?? errors.fields.identifier?.longMessage ?? errors.fields.identifier?.message ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
@@ -64,14 +98,18 @@ export default function SignIn() {
               autoCapitalize="none"
               autoComplete="email"
             />
-            {emailError && (
-              <Text className="text-xs font-poppins text-error mt-1 ml-1">{emailError}</Text>
+            {emailErrorMessage && (
+              <Text className="text-xs font-poppins text-error mt-1 ml-1">{emailErrorMessage}</Text>
             )}
           </View>
         </View>
 
         <View className="mt-6">
-          <PrimaryButton label="Log In" onPress={handleLogIn} />
+          <PrimaryButton
+            label="Log In"
+            onPress={handleLogIn}
+            disabled={fetchStatus === "fetching"}
+          />
         </View>
 
         <View className="flex-row items-center mt-6">
@@ -86,17 +124,17 @@ export default function SignIn() {
           <SocialButton
             label="Continue with Google"
             icon={<FontAwesome name="google" size={20} color="#4285F4" />}
-            disabled
+            onPress={() => handleSSOSignIn("oauth_google")}
           />
           <SocialButton
             label="Continue with Facebook"
             icon={<FontAwesome name="facebook" size={22} color="#1877F2" />}
-            disabled
+            onPress={() => handleSSOSignIn("oauth_facebook")}
           />
           <SocialButton
             label="Continue with Apple"
             icon={<FontAwesome name="apple" size={22} color="#000000" />}
-            disabled
+            onPress={() => handleSSOSignIn("oauth_apple")}
           />
         </View>
 
@@ -114,7 +152,7 @@ export default function SignIn() {
         visible={modalVisible}
         email={email}
         onClose={() => setModalVisible(false)}
-        verificationService={verifyEmailCode}
+        verificationService={handleVerifyEmailCode}
       />
     </SafeAreaView>
   );

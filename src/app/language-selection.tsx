@@ -44,48 +44,46 @@ export default function LanguageSelection() {
         <Text className="h3 flex-1 text-center mr-10">Choose a language</Text>
       </View>
 
-      <ScrollView
-        className="flex-1 px-6"
-        contentContainerClassName="pb-8"
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-row items-center border border-border rounded-full px-4 h-12 mt-4 bg-surface">
-          <Ionicons name="search" size={18} color="#6b7280" />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search languages"
-            placeholderTextColor="#9ca3af"
-            className="flex-1 ml-2 font-poppins text-sm text-text-primary p-0"
-            autoCapitalize="none"
-            autoCorrect={false}
-            accessibilityLabel="Search languages"
-          />
-        </View>
-
-        <Text className="h4 mt-6 mb-3">Popular</Text>
-
-        <View className="gap-3">
-          {filteredLanguages.map((language) => (
-            <LanguageCard
-              key={language.id}
-              language={language}
-              selected={selectedId === language.id}
-              onPress={() => setSelectedId(language.id)}
+      <ScrollView className="flex-1" contentContainerClassName="pb-6" keyboardShouldPersistTaps="handled">
+        <View className="px-6">
+          <View className="flex-row items-center border border-border rounded-full px-4 h-12 mt-4 bg-surface">
+            <Ionicons name="search" size={18} color="#6b7280" />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search languages"
+              placeholderTextColor="#9ca3af"
+              className="flex-1 ml-2 font-poppins text-sm text-text-primary p-0"
+              autoCapitalize="none"
+              autoCorrect={false}
+              accessibilityLabel="Search languages"
             />
-          ))}
-          {filteredLanguages.length === 0 && (
-            <Text className="text-sm font-poppins text-text-secondary text-center mt-6">
-              No languages found.
-            </Text>
-          )}
+          </View>
+
+          <Text className="h4 mt-6 mb-3">Popular</Text>
+
+          <View className="gap-3">
+            {filteredLanguages.map((language) => (
+              <LanguageCard
+                key={language.id}
+                language={language}
+                selected={selectedId === language.id}
+                onPress={() => setSelectedId(language.id)}
+              />
+            ))}
+            {filteredLanguages.length === 0 && (
+              <Text className="text-sm font-poppins text-text-secondary text-center mt-6">
+                No languages found.
+              </Text>
+            )}
+          </View>
+
+          <View className="mt-6">
+            <PrimaryButton label="Confirm" onPress={handleConfirm} disabled={!selectedId} />
+          </View>
         </View>
 
-        <View className="mt-6">
-          <PrimaryButton label="Confirm" onPress={handleConfirm} disabled={!selectedId} />
-        </View>
-
-        <Image source={images.earth} className="w-full h-56 mt-8" contentFit="contain" />
+        <Image source={images.earth} className="w-full h-80 mt-6" contentFit="cover" />
       </ScrollView>
     </SafeAreaView>
   );

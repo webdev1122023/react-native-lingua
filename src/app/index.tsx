@@ -5,7 +5,7 @@ export default function Index() {
   return (
     <View className="flex-1 justify-center items-center gap-6">
       <Text className="h1 text-center text-lingua-purple">
-        Lingua
+        KobbiRus
       </Text>
       <Link
         href="/onboarding"

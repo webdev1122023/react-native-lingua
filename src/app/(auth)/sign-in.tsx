@@ -11,6 +11,7 @@ import { VerificationModal } from "@/components/auth/VerificationModal";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SocialButton } from "@/components/SocialButton";
 import { TextField } from "@/components/TextField";
+import { posthog } from "@/lib/posthog";
 import { isValidEmail } from "@/lib/validation";
 
 export default function SignIn() {
@@ -36,6 +37,7 @@ export default function SignIn() {
     const { error } = await signIn.emailCode.sendCode({ emailAddress: email });
     if (error) return;
 
+    posthog?.capture("sign_in_code_requested", { method: "email_code" });
     setModalVisible(true);
   };
 
@@ -46,6 +48,7 @@ export default function SignIn() {
     if (signIn.status === "complete") {
       const { error: finalizeError } = await signIn.finalize();
       if (finalizeError) throw new Error(finalizeError.longMessage ?? finalizeError.message);
+      posthog?.capture("sign_in_completed", { method: "email_code" });
       return;
     }
 
@@ -56,6 +59,7 @@ export default function SignIn() {
     try {
       const { createdSessionId } = await startSSOFlow({ strategy });
       if (createdSessionId) {
+        posthog?.capture("sso_sign_in_completed", { provider: strategy });
         router.replace("/");
       }
     } catch (err) {

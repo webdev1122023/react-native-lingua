@@ -1,18 +1,21 @@
 import { useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LanguageCard } from "@/components/LanguageCard";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { images } from "@/constants/images";
 import { languages } from "@/data/languages";
+import { posthog } from "@/lib/posthog";
+import { useLanguageStore } from "@/store/languageStore";
+import { Image } from "@/tw/image";
 import type { LanguageCode } from "@/types/learning";
 
 export default function LanguageSelection() {
   const router = useRouter();
+  const setSelectedLanguage = useLanguageStore((state) => state.setSelectedLanguage);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<LanguageCode | null>(null);
 
@@ -28,7 +31,9 @@ export default function LanguageSelection() {
 
   const handleConfirm = () => {
     if (!selectedId) return;
-    router.back();
+    posthog?.capture("learning_language_selected", { language_code: selectedId });
+    setSelectedLanguage(selectedId);
+    router.replace("/");
   };
 
   return (
@@ -83,16 +88,8 @@ export default function LanguageSelection() {
           </View>
         </View>
 
-        <ExpoImage source={images.earth} style={styles.earthImage} contentFit="cover" />
+        <Image source={images.earth} className="w-full h-80 mt-6" contentFit="cover" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  earthImage: {
-    width: "100%",
-    height: 320,
-    marginTop: 24,
-  },
-});

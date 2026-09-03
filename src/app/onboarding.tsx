@@ -9,7 +9,7 @@ export default function Onboarding() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <View className="flex-1 px-6">
         <View className="flex-row items-center justify-center gap-2 mt-2">
           <Image
@@ -71,10 +71,6 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-  },
   buttonShadow: {
     shadowColor: "#5b3bf6",
     shadowOffset: { width: 0, height: 8 },

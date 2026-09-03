@@ -1,12 +1,15 @@
 import { useAuth } from "@clerk/expo";
-import { Redirect, useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
+
+import { useLanguageStore } from "@/store/languageStore";
 
 export default function Index() {
-  const router = useRouter();
-  const { isLoaded, isSignedIn, signOut } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
+  const selectedLanguage = useLanguageStore((state) => state.selectedLanguage);
+  const hasHydrated = useLanguageStore((state) => state.hasHydrated);
 
-  if (!isLoaded) {
+  if (!isLoaded || !hasHydrated) {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#5b3bf6" />
@@ -18,23 +21,9 @@ export default function Index() {
     return <Redirect href="/onboarding" />;
   }
 
-  return (
-    <View className="flex-1 justify-center items-center gap-6">
-      <Text className="h1 text-center text-lingua-purple">
-        KobbiRus
-      </Text>
-      <Pressable
-        onPress={() => router.push("/language-selection")}
-        className="bg-lingua-purple rounded-full px-6 py-3"
-      >
-        <Text className="text-white text-sm font-poppins-medium">Choose a language</Text>
-      </Pressable>
-      <Pressable
-        onPress={() => signOut()}
-        className="bg-lingua-purple rounded-full px-6 py-3"
-      >
-        <Text className="text-white text-sm font-poppins-medium">Sign out</Text>
-      </Pressable>
-    </View>
-  );
+  if (!selectedLanguage) {
+    return <Redirect href="/language-selection" />;
+  }
+
+  return <Redirect href="/home" />;
 }

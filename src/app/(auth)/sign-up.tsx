@@ -11,6 +11,7 @@ import { VerificationModal } from "@/components/auth/VerificationModal";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { SocialButton } from "@/components/SocialButton";
 import { TextField } from "@/components/TextField";
+import { posthog } from "@/lib/posthog";
 import { isValidEmail } from "@/lib/validation";
 
 const MIN_PASSWORD_LENGTH = 15;
@@ -53,6 +54,7 @@ export default function SignUp() {
     const { error: sendError } = await signUp.verifications.sendEmailCode();
     if (sendError) return;
 
+    posthog?.capture("sign_up_started", { method: "email_password" });
     setModalVisible(true);
   };
 
@@ -63,6 +65,7 @@ export default function SignUp() {
     if (signUp.status === "complete") {
       const { error: finalizeError } = await signUp.finalize();
       if (finalizeError) throw new Error(finalizeError.longMessage ?? finalizeError.message);
+      posthog?.capture("sign_up_completed", { method: "email_password" });
       return;
     }
 
@@ -73,6 +76,7 @@ export default function SignUp() {
     try {
       const { createdSessionId } = await startSSOFlow({ strategy });
       if (createdSessionId) {
+        posthog?.capture("sso_sign_up_completed", { provider: strategy });
         router.replace("/");
       }
     } catch (err) {

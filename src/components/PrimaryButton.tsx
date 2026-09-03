@@ -13,8 +13,10 @@ export function PrimaryButton({ label, onPress, disabled }: PrimaryButtonProps) 
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
-      className="bg-lingua-purple rounded-full h-16 items-center justify-center active:opacity-90"
-      style={[styles.shadow, disabled && styles.disabled]}
+      className={`bg-lingua-purple rounded-full h-16 items-center justify-center active:opacity-90 ${
+        disabled ? "opacity-50" : ""
+      }`}
+      style={styles.shadow}
     >
       <Text className="text-white text-base font-poppins-semibold">{label}</Text>
     </Pressable>
@@ -28,8 +30,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
-  },
-  disabled: {
-    opacity: 0.5,
   },
 });

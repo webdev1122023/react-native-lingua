@@ -24,6 +24,8 @@ while true; do
       _line="$(grep -m1 -E '^[[:space:]]*CLERK_SECRET_KEY[[:space:]]*=' "$_envfile" || true)"
       if [[ -n "$_line" ]]; then
         _value="${_line#*=}"
+        _value="${_value#"${_value%%[![:space:]]*}"}"
+        _value="${_value%"${_value##*[![:space:]]}"}"
         _value="${_value%\"}"
         _value="${_value#\"}"
         _value="${_value%\'}"
@@ -57,8 +59,9 @@ SCOPES="${CLERK_BAPI_SCOPES:-}"
 # comma-separated $SCOPES list (so "notwrite" can't satisfy "write").
 _has_scope() {
   local target="$1" token
-  local IFS=','
-  for token in $SCOPES; do
+  local -a _scope_tokens
+  IFS=',' read -ra _scope_tokens <<< "$SCOPES"
+  for token in "${_scope_tokens[@]}"; do
     token="${token#"${token%%[![:space:]]*}"}"
     token="${token%"${token##*[![:space:]]}"}"
     [[ "$token" == "$target" ]] && return 0

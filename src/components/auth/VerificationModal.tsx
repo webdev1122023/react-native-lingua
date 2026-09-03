@@ -81,7 +81,7 @@ export function VerificationModal({
         style={styles.backdrop}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+        <Pressable className="absolute inset-0" onPress={handleClose} />
 
         <View
           className="bg-white rounded-t-3xl px-6 pt-6"
@@ -121,7 +121,7 @@ export function VerificationModal({
             onChangeText={handleChangeText}
             keyboardType="number-pad"
             maxLength={CODE_LENGTH}
-            style={styles.hiddenInput}
+            className="absolute opacity-0 h-px w-px"
           />
         </View>
       </KeyboardAvoidingView>
@@ -134,11 +134,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  hiddenInput: {
-    position: "absolute",
-    opacity: 0,
-    height: 1,
-    width: 1,
   },
 });

@@ -1,8 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { BottomTabBarProps } from "expo-router/js-tabs";
 
-const BAR_HEIGHT = 72;
-
 export function CustomTabBar({ state, descriptors, navigation, insets }: BottomTabBarProps) {
   return (
     <View
@@ -10,7 +8,7 @@ export function CustomTabBar({ state, descriptors, navigation, insets }: BottomT
       style={{ bottom: insets.bottom + 12 }}
       pointerEvents="box-none"
     >
-      <View className="flex-row bg-white rounded-[28px]" style={styles.bar}>
+      <View className="flex-row items-center h-[72px] px-2 bg-white rounded-[28px]" style={styles.shadow}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const focused = state.index === index;
@@ -56,10 +54,7 @@ export function CustomTabBar({ state, descriptors, navigation, insets }: BottomT
 }
 
 const styles = StyleSheet.create({
-  bar: {
-    height: BAR_HEIGHT,
-    alignItems: "center",
-    paddingHorizontal: 8,
+  shadow: {
     shadowColor: "#0d132b",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,

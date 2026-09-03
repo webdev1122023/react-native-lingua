@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { safeAsyncStorage } from "@/lib/persistStorage";
 import type { LanguageCode } from "@/types/learning";
 
 interface LanguageState {
@@ -23,10 +23,13 @@ export const useLanguageStore = create<LanguageState>()(
     }),
     {
       name: "language-storage",
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => safeAsyncStorage),
       partialize: (state) => ({ selectedLanguage: state.selectedLanguage }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+      onRehydrateStorage: (initialState) => (_state, error) => {
+        if (error) {
+          safeAsyncStorage.removeItem("language-storage");
+        }
+        initialState.setHasHydrated(true);
       },
     }
   )

@@ -147,7 +147,13 @@ export default function Home() {
               languageName={language.name}
               level="A1"
               unitLabel={`Unit ${unit.order}`}
-              onPress={() => router.push("/learn")}
+              onPress={() => {
+                posthog?.capture("continue_learning_tapped", {
+                  language_code: language.id,
+                  unit_id: unit.id,
+                });
+                router.push("/learn");
+              }}
             />
           ) : (
             <View className="bg-surface rounded-3xl px-5 py-6 items-center">

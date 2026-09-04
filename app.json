@@ -35,7 +35,13 @@
       ],
       "expo-secure-store",
       "@clerk/expo",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use your camera so you can see yourself during AI Teacher lessons."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

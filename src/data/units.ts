@@ -39,6 +39,27 @@ export const units: Unit[] = [
     description: "Greetings and introducing yourself.",
     order: 1,
   },
+  {
+    id: "de-unit-1",
+    languageId: "de",
+    title: "Grundlagen 1 (Basics 1)",
+    description: "Greetings, family, numbers, and everyday phrases.",
+    order: 1,
+  },
+  {
+    id: "it-unit-1",
+    languageId: "it",
+    title: "Basi 1 (Basics 1)",
+    description: "Greetings, family, numbers, and everyday phrases.",
+    order: 1,
+  },
+  {
+    id: "ko-unit-1",
+    languageId: "ko",
+    title: "기초 1 (Basics 1)",
+    description: "Greetings, family, numbers, and everyday phrases.",
+    order: 1,
+  },
 ];
 
 export function getUnitsByLanguage(languageId: LanguageCode): Unit[] {

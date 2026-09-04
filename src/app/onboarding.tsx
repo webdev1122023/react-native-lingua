@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { images } from "@/constants/images";
+import { posthog } from "@/lib/posthog";
 import { Image } from "@/tw/image";
 
 export default function Onboarding() {
@@ -56,7 +57,10 @@ export default function Onboarding() {
         </View>
 
         <Pressable
-          onPress={() => router.push("/sign-up")}
+          onPress={() => {
+            posthog?.capture("onboarding_get_started_tapped");
+            router.push("/sign-up");
+          }}
           className="bg-lingua-purple rounded-full h-16 items-center justify-center mb-6 active:opacity-90"
           style={styles.buttonShadow}
         >
